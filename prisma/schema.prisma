@@ -1,0 +1,561 @@
+// =========================================================
+// OPEN NUMERIC — SCHEMA PRISMA
+// https://pris.ly/d/prisma-schema
+// =========================================================
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// =========================================================
+// 1. ADMIN
+// =========================================================
+
+model Admin {
+  id               String    @id @default(cuid())
+  username         String    @unique
+  passwordHash     String
+  displayName      String
+  email            String?   @unique
+  role             AdminRole @default(EDITOR)
+  isActive         Boolean   @default(true)
+  lastLoginAt      DateTime?
+  refreshTokenHash String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Audit relations
+  projects        Project[]        @relation("ProjectAuthor")
+  services        Service[]        @relation("ServiceAuthor")
+  teamMembers     TeamMember[]     @relation("TeamMemberAuthor")
+  clients         Client[]         @relation("ClientAuthor")
+  testimonials    Testimonial[]    @relation("TestimonialAuthor")
+  navItems        NavItem[]        @relation("NavItemAuthor")
+  socials         Social[]         @relation("SocialAuthor")
+  settingsUpdates SiteSettings[]   @relation("SettingsUpdatedBy")
+  uploads         Upload[]         @relation("UploadUploader")
+
+  @@index([username])
+}
+
+enum AdminRole {
+  ADMIN
+  EDITOR
+}
+
+// =========================================================
+// 2. SITE SETTINGS (singleton)
+// =========================================================
+
+model SiteSettings {
+  id                     String   @id @default("singleton")
+  logo                   String
+  favicon                String?
+  siteName               String
+
+  email                  String
+  emailSecondary         String?
+  phone                  String
+  phoneSecondary         String?
+  whatsapp               String?
+  whatsappSecondary      String?
+
+  address                String
+  mapEmbedUrl            String?
+
+  availability           String   @default("24/7")
+
+  defaultMetaTitle       String?
+  defaultMetaDescription String?  @db.Text
+  googleAnalyticsId      String?
+
+  updatedById            String?
+  updatedBy              Admin?   @relation("SettingsUpdatedBy", fields: [updatedById], references: [id])
+
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  translations SiteSettingsTranslation[]
+}
+
+model SiteSettingsTranslation {
+  id             String       @id @default(cuid())
+  siteSettingsId String
+  siteSettings   SiteSettings @relation(fields: [siteSettingsId], references: [id], onDelete: Cascade)
+  locale         String
+  tagline        String?      @db.Text
+  about          String?      @db.Text
+
+  @@unique([siteSettingsId, locale])
+}
+
+// =========================================================
+// 3. SOCIAL
+// =========================================================
+
+model Social {
+  id         String   @id @default(cuid())
+  key        String   @unique   // "facebook", "twitter", "linkedin", ...
+  icon       String             // nom d'icône Lucide
+  url        String
+  hoverColor String             // ex: "hover:text-blue-600"
+  order      Int      @default(0)
+  isActive   Boolean  @default(true)
+
+  authorId   String?
+  author     Admin?   @relation("SocialAuthor", fields: [authorId], references: [id])
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  translations SocialTranslation[]
+}
+
+model SocialTranslation {
+  id       String @id @default(cuid())
+  socialId String
+  social   Social @relation(fields: [socialId], references: [id], onDelete: Cascade)
+  locale   String
+  name     String
+
+  @@unique([socialId, locale])
+  @@index([locale])
+}
+
+// =========================================================
+// 4. NAVIGATION
+// =========================================================
+
+model NavItem {
+  id        String    @id @default(cuid())
+  key       String    @unique
+  href      String
+  order     Int       @default(0)
+  isActive  Boolean   @default(true)
+  parentId  String?
+  parent    NavItem?  @relation("NavParent", fields: [parentId], references: [id], onDelete: Cascade)
+  children  NavItem[] @relation("NavParent")
+
+  authorId  String?
+  author    Admin?    @relation("NavItemAuthor", fields: [authorId], references: [id])
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  translations NavItemTranslation[]
+}
+
+model NavItemTranslation {
+  id        String  @id @default(cuid())
+  navItemId String
+  navItem   NavItem @relation(fields: [navItemId], references: [id], onDelete: Cascade)
+  locale    String
+  label     String
+
+  @@unique([navItemId, locale])
+  @@index([locale])
+}
+
+// =========================================================
+// 5. SERVICES
+// =========================================================
+
+model Service {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  slug      String   @unique
+  href      String
+  icon      String
+  accent    String
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+
+  authorId  String?
+  author    Admin?   @relation("ServiceAuthor", fields: [authorId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  translations ServiceTranslation[]
+  categories   ServiceCategory[]
+}
+
+model ServiceTranslation {
+  id                 String  @id @default(cuid())
+  serviceId          String
+  service            Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  locale             String
+  name               String
+  heroTitle          String?
+  heroTitleHighlight String?
+  heroSubtitle       String? @db.Text
+
+  @@unique([serviceId, locale])
+  @@index([locale])
+}
+
+model ServiceCategory {
+  id        String   @id @default(cuid())
+  serviceId String
+  service   Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  key       String
+  icon      String
+  accent    String
+  order     Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  translations ServiceCategoryTranslation[]
+  items        ServiceItem[]
+
+  @@unique([serviceId, key])
+}
+
+model ServiceCategoryTranslation {
+  id                String          @id @default(cuid())
+  serviceCategoryId String
+  serviceCategory   ServiceCategory @relation(fields: [serviceCategoryId], references: [id], onDelete: Cascade)
+  locale            String
+  name              String
+  description       String?         @db.Text
+
+  @@unique([serviceCategoryId, locale])
+}
+
+model ServiceItem {
+  id                String          @id @default(cuid())
+  serviceCategoryId String
+  serviceCategory   ServiceCategory @relation(fields: [serviceCategoryId], references: [id], onDelete: Cascade)
+  key               String
+  image             String?
+  icon              String?
+  order             Int             @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  translations ServiceItemTranslation[]
+
+  @@unique([serviceCategoryId, key])
+}
+
+model ServiceItemTranslation {
+  id            String      @id @default(cuid())
+  serviceItemId String
+  serviceItem   ServiceItem @relation(fields: [serviceItemId], references: [id], onDelete: Cascade)
+  locale        String
+  name          String
+  description   String?     @db.Text
+
+  @@unique([serviceItemId, locale])
+}
+
+// =========================================================
+// 6. PROJETS
+// =========================================================
+
+model Project {
+  id        String          @id @default(cuid())
+  slug      String          @unique
+  cover     String
+  heroImage String?
+  category  ProjectCategory
+  scope     ProjectScope
+  status    ProjectStatus   @default(COMPLETED)
+  year      Int
+  tech      String[]
+  tags      String[]
+  featured  Boolean         @default(false)
+  order     Int             @default(0)
+  isActive  Boolean         @default(true)
+
+  clientId  String?
+  client    Client?         @relation(fields: [clientId], references: [id], onDelete: SetNull)
+
+  authorId  String?
+  author    Admin?          @relation("ProjectAuthor", fields: [authorId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  translations ProjectTranslation[]
+  gallery      ProjectGallery[]
+  features     ProjectFeature[]
+  links        ProjectLink[]
+
+  @@index([category])
+  @@index([scope])
+  @@index([year])
+  @@index([featured])
+}
+
+model ProjectTranslation {
+  id              String  @id @default(cuid())
+  projectId       String
+  project         Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  locale          String
+  title           String
+  description     String  @db.Text
+  longDescription String? @db.Text
+
+  @@unique([projectId, locale])
+  @@index([locale])
+}
+
+model ProjectGallery {
+  id        String  @id @default(cuid())
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  src       String
+  order     Int     @default(0)
+
+  translations ProjectGalleryTranslation[]
+}
+
+model ProjectGalleryTranslation {
+  id               String         @id @default(cuid())
+  projectGalleryId String
+  projectGallery   ProjectGallery @relation(fields: [projectGalleryId], references: [id], onDelete: Cascade)
+  locale           String
+  caption          String
+
+  @@unique([projectGalleryId, locale])
+}
+
+model ProjectFeature {
+  id        String  @id @default(cuid())
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  key       String
+  icon      String
+  order     Int     @default(0)
+
+  translations ProjectFeatureTranslation[]
+
+  @@unique([projectId, key])
+}
+
+model ProjectFeatureTranslation {
+  id               String         @id @default(cuid())
+  projectFeatureId String
+  projectFeature   ProjectFeature @relation(fields: [projectFeatureId], references: [id], onDelete: Cascade)
+  locale           String
+  title            String
+  description      String         @db.Text
+
+  @@unique([projectFeatureId, locale])
+}
+
+model ProjectLink {
+  id        String          @id @default(cuid())
+  projectId String
+  project   Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  type      ProjectLinkType
+  url       String
+  order     Int             @default(0)
+}
+
+enum ProjectCategory {
+  WEB
+  MOBILE
+  SOFTWARE
+  API
+  MODULE
+  PACKAGE
+  SERVICE
+  IA
+  DESIGN
+  LOGO
+  TRAINING
+  MAINTENANCE
+  SALES
+}
+
+enum ProjectScope {
+  INTERNAL
+  CLIENT
+  PUBLIC
+  OPEN_SOURCE
+  EXTERNAL
+}
+
+enum ProjectStatus {
+  COMPLETED
+  IN_PROGRESS
+  PLANNED
+  ARCHIVED
+}
+
+enum ProjectLinkType {
+  DEMO
+  GITHUB
+  NPM
+  DOC
+  SITE
+  STORE
+  ARTICLE
+}
+
+// =========================================================
+// 7. ÉQUIPE
+// =========================================================
+
+model TeamMember {
+  id        String  @id @default(cuid())
+  key       String  @unique
+  image     String
+  linkedin  String?
+  twitter   String?
+  order     Int     @default(0)
+  isActive  Boolean @default(true)
+
+  authorId  String?
+  author    Admin?  @relation("TeamMemberAuthor", fields: [authorId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  translations TeamMemberTranslation[]
+}
+
+model TeamMemberTranslation {
+  id           String     @id @default(cuid())
+  teamMemberId String
+  teamMember   TeamMember @relation(fields: [teamMemberId], references: [id], onDelete: Cascade)
+  locale       String
+  name         String
+  role         String
+  bio          String     @db.Text
+
+  @@unique([teamMemberId, locale])
+  @@index([locale])
+}
+
+// =========================================================
+// 8. CLIENTS
+// =========================================================
+
+model Client {
+  id        String  @id @default(cuid())
+  name      String
+  logo      String
+  url       String?
+  order     Int     @default(0)
+  isActive  Boolean @default(true)
+
+  authorId  String?
+  author    Admin?  @relation("ClientAuthor", fields: [authorId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  projects Project[]
+}
+
+// =========================================================
+// 9. TÉMOIGNAGES
+// =========================================================
+
+model Testimonial {
+  id        String  @id @default(cuid())
+  key       String  @unique
+  image     String
+  rating    Int     @default(5)
+  order     Int     @default(0)
+  isActive  Boolean @default(true)
+
+  authorId  String?
+  author    Admin?  @relation("TestimonialAuthor", fields: [authorId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  translations TestimonialTranslation[]
+}
+
+model TestimonialTranslation {
+  id            String      @id @default(cuid())
+  testimonialId String
+  testimonial   Testimonial @relation(fields: [testimonialId], references: [id], onDelete: Cascade)
+  locale        String
+  quote         String      @db.Text
+  author        String
+  company       String
+
+  @@unique([testimonialId, locale])
+}
+
+// =========================================================
+// 10. CONTACT & DEVIS
+// =========================================================
+
+model ContactSubmission {
+  id        String           @id @default(cuid())
+  name      String
+  email     String
+  subject   String
+  message   String           @db.Text
+  status    SubmissionStatus @default(NEW)
+  ip        String?
+  userAgent String?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model QuoteRequest {
+  id          String           @id @default(cuid())
+  name        String
+  company     String?
+  email       String
+  phone       String?
+  projectType String
+  budget      String
+  timeline    String
+  description String           @db.Text
+  status      SubmissionStatus @default(NEW)
+  ip          String?
+  userAgent   String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum SubmissionStatus {
+  NEW
+  READ
+  REPLIED
+  ARCHIVED
+  SPAM
+}
+
+// =========================================================
+// 11. UPLOADS
+// =========================================================
+
+model Upload {
+  id           String   @id @default(cuid())
+  filename     String   @unique
+  originalName String
+  mimeType     String
+  size         Int
+  path         String
+  url          String
+
+  uploadedById String?
+  uploadedBy   Admin?   @relation("UploadUploader", fields: [uploadedById], references: [id])
+
+  createdAt    DateTime @default(now())
+
+  @@index([uploadedById])
+}

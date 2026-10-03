@@ -1,0 +1,89 @@
+# ==========================================
+# COMPILED OUTPUT
+# ==========================================
+/dist
+/node_modules
+/build
+
+# TypeScript build cache
+*.tsbuildinfo
+
+# ==========================================
+# LOGS
+# ==========================================
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# ==========================================
+# OS
+# ==========================================
+.DS_Store
+Thumbs.db
+
+# ==========================================
+# TESTS
+# ==========================================
+/coverage
+/.nyc_output
+
+# ==========================================
+# IDE & EDITORS
+# ==========================================
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# ==========================================
+# DOTENV
+# ==========================================
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
+# ==========================================
+# TEMP
+# ==========================================
+.temp
+.tmp
+
+# ==========================================
+# RUNTIME DATA
+# ==========================================
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# ==========================================
+# DIAGNOSTIC REPORTS
+# ==========================================
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# ==========================================
+# PRISMA GENERATED CLIENT
+# ==========================================
+/src/generated/prisma
+
+# ==========================================
+# UPLOADS UTILISATEURS
+# ==========================================
+public/uploads/*
+!public/uploads/.gitkeep
