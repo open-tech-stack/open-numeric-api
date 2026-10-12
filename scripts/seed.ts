@@ -126,7 +126,6 @@ async function resetDatabase() {
 
     await prisma.contactSubmission.deleteMany();
     await prisma.quoteRequest.deleteMany();
-    await prisma.upload.deleteMany();
 
     // Admin : on garde sauf si demandé explicitement
     // await prisma.admin.deleteMany();

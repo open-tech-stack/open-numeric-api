@@ -19,7 +19,6 @@ import { TestimonialsModule } from './modules/testimonials/testimonials.module.j
 import { SocialsModule } from './modules/socials/socials.module.js';
 import { ContactModule } from './modules/contact/contact.module.js';
 import { QuoteModule } from './modules/quote/quote.module.js';
-import { UploadsModule } from './modules/uploads/uploads.module.js';
 import { HealthModule } from './modules/health/health.module.js';
 import { StatsModule } from './modules/stats/stats.module.js';
 import { SearchModule } from './modules/search/search.module.js';
@@ -58,7 +57,6 @@ import { SearchModule } from './modules/search/search.module.js';
     SocialsModule,
     ContactModule,
     QuoteModule,
-    UploadsModule,
     StatsModule,
     SearchModule,
     HealthModule,

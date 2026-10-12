@@ -23,24 +23,25 @@ export class ProjectsRepository {
     },
   };
 
-  async findAll(params: {
-    where: Prisma.ProjectWhereInput;
-    skip: number;
-    take: number;
-    orderBy: Prisma.ProjectOrderByWithRelationInput[];
-  }) {
-    const [items, total] = await this.prisma.$transaction([
-      this.prisma.project.findMany({
-        where: params.where,
-        include: this.fullInclude,
-        skip: params.skip,
-        take: params.take,
-        orderBy: params.orderBy,
-      }),
-      this.prisma.project.count({ where: params.where }),
-    ]);
-    return { items, total };
-  }
+async findAll(params: {
+  where: Prisma.ProjectWhereInput;
+  skip: number;
+  take: number;
+  orderBy: Prisma.ProjectOrderByWithRelationInput[];
+}) {
+  const [items, total] = await Promise.all([
+    this.prisma.project.findMany({
+      where: params.where,
+      include: this.fullInclude,
+      skip: params.skip,
+      take: params.take,
+      orderBy: params.orderBy,
+    }),
+    this.prisma.project.count({ where: params.where }),
+  ]);
+
+  return { items, total };
+}
 
   findById(id: string) {
     return this.prisma.project.findUnique({

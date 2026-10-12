@@ -38,8 +38,6 @@ export class StatsService {
       socialsActive,
       navTotal,
       navActive,
-      uploadsAggregate,
-      uploadsTotal,
     ] = await Promise.all([
       this.prisma.project.count(),
       this.prisma.project.count({ where: { isActive: true } }),
@@ -58,8 +56,6 @@ export class StatsService {
       this.prisma.social.count({ where: { isActive: true } }),
       this.prisma.navItem.count(),
       this.prisma.navItem.count({ where: { isActive: true } }),
-      this.prisma.upload.aggregate({ _sum: { size: true } }),
-      this.prisma.upload.count(),
     ]);
 
     // ============================================================
@@ -182,10 +178,7 @@ export class StatsService {
         },
         socials: { total: socialsTotal, active: socialsActive },
         navigation: { total: navTotal, active: navActive },
-        uploads: {
-          total: uploadsTotal,
-          totalSize: uploadsAggregate._sum.size ?? 0,
-        },
+     
       },
       interactions: {
         contacts: {

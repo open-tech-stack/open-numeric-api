@@ -57,15 +57,6 @@ async function bootstrap() {
   // Cookie parser (pour les tokens httpOnly)
   app.use(cookieParser());
 
-  // Fichiers statiques — uploads utilisateurs
-  // ⚠️ Servis HORS du préfixe /api → accessible via /uploads/xxx.png
-  app.useStaticAssets(join(process.cwd(), 'public', 'uploads'), {
-    prefix: '/uploads/',
-    maxAge: isProd ? '30d' : 0,
-    etag: true,
-    index: false,
-  });
-
   // CORS
   app.enableCors({
     origin: buildCorsOrigin(isProd, config.get('cors.origins', { infer: true })),
@@ -133,7 +124,6 @@ async function bootstrap() {
   await app.listen(port);
 
   console.log(`🚀 API prête sur http://localhost:${port}/api`);
-  console.log(`🖼️  Uploads sur http://localhost:${port}/uploads/...`);
   if (config.get('app.swaggerEnabled', { infer: true })) {
     console.log(`📘 Swagger sur http://localhost:${port}/docs`);
   }

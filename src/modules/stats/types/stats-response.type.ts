@@ -34,10 +34,6 @@ export interface StatsResponse {
       total: number;
       active: number;
     };
-    uploads: {
-      total: number;
-      totalSize: number; // octets
-    };
   };
 
   // Interactions

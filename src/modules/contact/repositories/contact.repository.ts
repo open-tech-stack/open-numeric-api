@@ -7,23 +7,22 @@ import { PrismaService } from '../../../prisma/prisma.service.js';
 export class ContactRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(params: {
-    where: Prisma.ContactSubmissionWhereInput;
-    skip: number;
-    take: number;
-  }) {
-    const [items, total] = await this.prisma.$transaction([
-      this.prisma.contactSubmission.findMany({
-        where: params.where,
-        skip: params.skip,
-        take: params.take,
-        orderBy: { createdAt: 'desc' },
-      }),
-      this.prisma.contactSubmission.count({ where: params.where }),
-    ]);
-    return { items, total };
-  }
-
+async findAll(params: {
+  where: Prisma.ContactSubmissionWhereInput;
+  skip: number;
+  take: number;
+}) {
+  const [items, total] = await Promise.all([
+    this.prisma.contactSubmission.findMany({
+      where: params.where,
+      skip: params.skip,
+      take: params.take,
+      orderBy: { createdAt: 'desc' },
+    }),
+    this.prisma.contactSubmission.count({ where: params.where }),
+  ]);
+  return { items, total };
+}
   findById(id: string) {
     return this.prisma.contactSubmission.findUnique({ where: { id } });
   }

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   Logger,
   UnauthorizedException,
@@ -11,6 +12,8 @@ import type { Admin } from '../../generated/prisma/client.js';
 import type { AppConfig } from '../../config/configuration.js';
 import { AdminRepository } from '../admin/repositories/admin.repository.js';
 import type { JwtPayload } from './types/jwt-payload.type.js';
+import { ChangePasswordDto } from './dto/change-password.dto.js';
+import { UpdateProfileDto } from './dto/update-profile.dto.js';
 
 @Injectable()
 export class AuthService {
@@ -69,6 +72,45 @@ export class AuthService {
     }
 
     return this.issueTokens(admin);
+  }
+
+  /* ---------------- UPDATE PROFILE ---------------- */
+  async updateProfile(adminId: string, dto: UpdateProfileDto) {
+    const admin = await this.adminRepo.findById(adminId);
+    if (!admin) throw new UnauthorizedException();
+
+    const updated = await this.adminRepo.update(adminId, {
+      ...(dto.displayName !== undefined && { displayName: dto.displayName }),
+      ...(dto.email !== undefined && { email: dto.email || null }),
+    });
+
+    return {
+      id: updated.id,
+      username: updated.username,
+      displayName: updated.displayName,
+      email: updated.email,
+      role: updated.role,
+    };
+  }
+
+  /* ---------------- CHANGE PASSWORD ---------------- */
+  async changePassword(adminId: string, dto: ChangePasswordDto) {
+    const admin = await this.adminRepo.findById(adminId);
+    if (!admin) throw new UnauthorizedException();
+
+    const matches = await bcrypt.compare(dto.currentPassword, admin.passwordHash);
+    if (!matches) {
+      throw new BadRequestException('Mot de passe actuel incorrect.');
+    }
+
+    const newHash = await bcrypt.hash(dto.newPassword, 12);
+    await this.adminRepo.update(adminId, { passwordHash: newHash });
+
+    // Sécurité : on révoque les refresh tokens existants
+    await this.adminRepo.updateRefreshHash(adminId, null);
+
+    this.logger.log(`Mot de passe modifié : ${admin.username}`);
+    return { success: true };
   }
 
   async logout(adminId: string) {

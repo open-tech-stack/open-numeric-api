@@ -94,7 +94,5 @@ export class PrismaService
     const finalMsg =
       lastError instanceof Error ? lastError.message : String(lastError);
     this.logger.error(`❌ Connexion DB définitivement échouée : ${finalMsg}`);
-    // On ne throw PAS : on laisse l'app démarrer et l'erreur remontera
-    // au moment d'une vraie requête (health renverra connected: false).
   }
 }

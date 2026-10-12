@@ -38,7 +38,6 @@ model Admin {
   navItems        NavItem[]        @relation("NavItemAuthor")
   socials         Social[]         @relation("SocialAuthor")
   settingsUpdates SiteSettings[]   @relation("SettingsUpdatedBy")
-  uploads         Upload[]         @relation("UploadUploader")
 
   @@index([username])
 }
@@ -537,25 +536,4 @@ enum SubmissionStatus {
   REPLIED
   ARCHIVED
   SPAM
-}
-
-// =========================================================
-// 11. UPLOADS
-// =========================================================
-
-model Upload {
-  id           String   @id @default(cuid())
-  filename     String   @unique
-  originalName String
-  mimeType     String
-  size         Int
-  path         String
-  url          String
-
-  uploadedById String?
-  uploadedBy   Admin?   @relation("UploadUploader", fields: [uploadedById], references: [id])
-
-  createdAt    DateTime @default(now())
-
-  @@index([uploadedById])
 }

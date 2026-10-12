@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Patch,
   Post,
   Req,
   Res,
@@ -23,7 +24,7 @@ import { Public } from '../../common/decorators/public.decorator.js';
 import type { AppConfig } from '../../config/configuration.js';
 
 import { AuthService } from './auth.service.js';
-import { LoginDto, RefreshDto } from './dto/index.js';
+import { ChangePasswordDto, LoginDto, RefreshDto, UpdateProfileDto } from './dto/index.js';
 import type { JwtPayload } from './types/jwt-payload.type.js';
 import {
   clearAuthCookies,
@@ -104,10 +105,24 @@ export class AuthController {
     return { success: true };
   }
 
-  @Get('me')
+   @Patch('me')
   @ApiBearerAuth('access-token')
-  @ApiOperation({ summary: 'Profil admin connecté' })
-  me(@CurrentUser() user: JwtPayload) {
-    return this.authService.me(user.sub);
+  @ApiOperation({ summary: 'Mettre à jour mon profil' })
+  updateProfile(
+    @CurrentUser() user: JwtPayload,
+    @Body() dto: UpdateProfileDto,
+  ) {
+    return this.authService.updateProfile(user.sub, dto);
+  }
+
+  @Patch('password')
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Changer mon mot de passe' })
+  changePassword(
+    @CurrentUser() user: JwtPayload,
+    @Body() dto: ChangePasswordDto,
+  ) {
+    return this.authService.changePassword(user.sub, dto);
   }
 }

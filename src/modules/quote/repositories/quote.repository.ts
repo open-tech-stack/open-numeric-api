@@ -8,21 +8,21 @@ export class QuoteRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAll(params: {
-    where: Prisma.QuoteRequestWhereInput;
-    skip: number;
-    take: number;
-  }) {
-    const [items, total] = await this.prisma.$transaction([
-      this.prisma.quoteRequest.findMany({
-        where: params.where,
-        skip: params.skip,
-        take: params.take,
-        orderBy: { createdAt: 'desc' },
-      }),
-      this.prisma.quoteRequest.count({ where: params.where }),
-    ]);
-    return { items, total };
-  }
+  where: Prisma.QuoteRequestWhereInput;
+  skip: number;
+  take: number;
+}) {
+  const [items, total] = await Promise.all([
+    this.prisma.quoteRequest.findMany({
+      where: params.where,
+      skip: params.skip,
+      take: params.take,
+      orderBy: { createdAt: 'desc' },
+    }),
+    this.prisma.quoteRequest.count({ where: params.where }),
+  ]);
+  return { items, total };
+}
 
   findById(id: string) {
     return this.prisma.quoteRequest.findUnique({ where: { id } });
