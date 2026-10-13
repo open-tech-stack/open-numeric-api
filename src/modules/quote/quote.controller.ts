@@ -12,7 +12,6 @@ import {
   Req,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';
 
 import { Public } from '../../common/decorators/public.decorator.js';
@@ -37,7 +36,6 @@ export class QuoteController {
   @Public()
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @Throttle({ default: { limit: 2, ttl: 60_000 } })
   @ApiOperation({
     summary: 'Soumettre une demande de devis (2 / minute max)',
   })
