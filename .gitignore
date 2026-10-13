@@ -87,3 +87,5 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 # ==========================================
 public/uploads/*
 !public/uploads/.gitkeep
+.vercel
+.env*
