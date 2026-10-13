@@ -29,7 +29,7 @@
     "@nestjs/jwt": "^12.0.2",
     "@nestjs/observe": "^0.1.8",
     "@nestjs/passport": "^12.0.0",
-    "@nestjs/platform-express": "^12.1.2",
+    "@nestjs/platform-express": "^12.0.1",
     "@nestjs/swagger": "^12.0.1",
     "@nestjs/throttler": "^6.7.1",
     "@prisma/adapter-pg": "^7.10.0",
@@ -42,16 +42,14 @@
     "expo-server-sdk": "^7.2.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
-    "pg": "^8.23.1",
+    "pg": "^8.23.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
-    "sharp": "^0.35.5",
-    "swagger-ui-dist": "^5.33.1",
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^12.0.0",
-    "@nestjs/mau": "^0.0.6",
+    "@nestjs/mau": "^0.2.6",
     "@nestjs/schematics": "^12.0.0",
     "@nestjs/testing": "^12.0.1",
     "@types/bcrypt": "^6.0.0",
@@ -68,15 +66,9 @@
     "prisma": "^7.10.0",
     "source-map-support": "^0.5.21",
     "supertest": "^7.0.0",
-    "tsx": "^4.23.15",
+    "tsx": "^4.23.13",
     "typescript": "^6.0.2",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^4.1.2"
-  },
-  "allowScripts": {
-    "@prisma/engines@7.10.0": true,
-    "prisma@7.10.0": true,
-    "bcrypt@6.0.0": true,
-    "esbuild@0.28.2": true
   }
 }
