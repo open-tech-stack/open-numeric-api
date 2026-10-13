@@ -12,29 +12,32 @@ export function setAuthCookies(
   user: unknown,
   isProd: boolean,
 ) {
-  const base = {
+  // 🔑 En prod : sameSite 'none' + secure 'true' (cross-site Vercel)
+  // 🔑 En dev  : sameSite 'lax' + secure 'false' (localhost http)
+  const crossSite = isProd;
+
+  const httpOnlyBase = {
     httpOnly: true as const,
-    secure: isProd,
-    sameSite: 'lax' as const,
+    secure: crossSite,               // ✅ true en prod
+    sameSite: (crossSite ? 'none' : 'lax') as 'none' | 'lax', // ✅ none en prod
   };
 
   res.cookie(ACCESS_COOKIE, tokens.accessToken, {
-    ...base,
+    ...httpOnlyBase,
     path: '/',
     maxAge: 15 * 60 * 1000,
   });
 
   res.cookie(REFRESH_COOKIE, tokens.refreshToken, {
-    ...base,
-    sameSite: 'strict',
+    ...httpOnlyBase,
     path: REFRESH_PATH,
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
   res.cookie(USER_COOKIE, JSON.stringify(user), {
     httpOnly: false,
-    secure: isProd,
-    sameSite: 'lax',
+    secure: crossSite,
+    sameSite: crossSite ? 'none' : 'lax',
     path: '/',
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
